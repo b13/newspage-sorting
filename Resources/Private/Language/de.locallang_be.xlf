@@ -5,11 +5,11 @@
 		<body>
 			<trans-unit id="sortByMonth">
 				<source>Sort news into folders by month</source>
-				<target>News in Monats-Ordner sortieren</source>
+				<target>News in Monats-Ordner sortieren</target>
 			</trans-unit>
 			<trans-unit id="sortByDay">
 				<source>Sort news into folders by day (requires sorting by months)</source>
-				<target>News in Tages-Ordner sortieren (Sortierung in Monats-Ordner muss aktiviert sein)</source>
+				<target>News in Tages-Ordner sortieren (Sortierung in Monats-Ordner muss aktiviert sein)</target>
 			</trans-unit>
 		</body>
 	</file>
