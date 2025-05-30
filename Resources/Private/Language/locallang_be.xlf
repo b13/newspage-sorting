@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
+	<file>
+		<header/>
+		<body>
+			<trans-unit id="sortByMonth">
+				<source>Sort news into folders by month</source>
+			</trans-unit>
+			<trans-unit id="sortByDay">
+				<source>Sort news into folders by day (requires sorting by months)</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

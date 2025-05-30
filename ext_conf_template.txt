@@ -1,0 +1,4 @@
+# cat=Sorting; type=boolean; label=LLL:EXT:newspage_sorting/Resources/Private/Language/locallang_be.xlf:sortByMonth
+sortByMonth = 1
+# cat=Sorting; type=boolean; label=LLL:EXT:newspage_sorting/Resources/Private/Language/locallang_be.xlf:sortByDay
+sortByDay = 1
