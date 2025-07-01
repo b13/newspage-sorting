@@ -12,6 +12,7 @@ namespace B13\NewspageSorting\Hooks;
  * of the License, or any later version.
  */
 
+use B13\NewspageSorting\FolderType;
 use Doctrine\DBAL\ParameterType;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -96,8 +97,9 @@ class SortNews
     {
         $root = array_shift($rootLine);
         $yearFolder = array_shift($rootLine);
-        if (($yearFolder['title'] ?? '') !== $date->format('Y')) {
-            $yearFolder = $this->resolveFolder($root['uid'], $date->format('Y'));
+
+        if (($yearFolder['title'] ?? '') !== $date->format(FolderType::YEAR->value)) {
+            $yearFolder = $this->resolveFolder($root['uid'], $date, FolderType::YEAR);
             $rootLine = []; // don't look in wrong year folder
         } else {
             $yearFolder = $yearFolder['uid'];
@@ -108,8 +110,8 @@ class SortNews
             return $yearFolder;
         }
         $monthFolder = array_shift($rootLine);
-        if (($monthFolder['title'] ?? '') !== $date->format('m')) {
-            $monthFolder = $this->resolveFolder($yearFolder, $date->format('m'));
+        if (($monthFolder['title'] ?? '') !== $date->format(FolderType::MONTH->value)) {
+            $monthFolder = $this->resolveFolder($yearFolder, $date, FolderType::MONTH);
         } else {
             $monthFolder = $monthFolder['uid'];
             $this->pagesToSort[] = $monthFolder;
@@ -119,8 +121,8 @@ class SortNews
             return $monthFolder;
         }
         $dayFolder = array_shift($rootLine);
-        if (($dayFolder['title'] ?? '') !== $date->format('d')) {
-            $dayFolder = $this->resolveFolder($monthFolder, $date->format('d'));
+        if (($dayFolder['title'] ?? '') !== $date->format(FolderType::DAY->value)) {
+            $dayFolder = $this->resolveFolder($monthFolder, $date, FolderType::DAY);
         } else {
             $dayFolder = $dayFolder['uid'];
             $this->pagesToSort[] = $dayFolder;
@@ -129,12 +131,12 @@ class SortNews
         return $dayFolder;
     }
 
-    protected function resolveFolder(int $pid, string $title): int
+    protected function resolveFolder(int $pid, \DateTime $date, FolderType $type): int
     {
         $this->pagesToSort[] = $pid;
-        $uid = $this->getFolder($pid, $title);
+        $uid = $this->getFolder($pid, $date->format($type->value));
         if ($uid === null) {
-            $uid = $this->createFolder($pid, $title);
+            $uid = $this->createFolder($pid, $date, $type);
         }
         return $uid;
     }
@@ -153,26 +155,28 @@ class SortNews
             ->fetchOne() ?: null;
     }
 
-    protected function createFolder(int $pid, string $title): int
+    protected function createFolder(int $pid, \DateTime $date, FolderType $type): int
     {
         $execTime = GeneralUtility::makeInstance(Context::class)->getAspect('date')->getDateTime()->getTimestamp();
         $newKey = uniqid('NEW');
         $data = [
             'pages' => [
-                $newKey => [
-                    'pid' => $pid,
-                    'hidden' => 0,
-                    'doktype' => 254,
-                    'title' => $title,
-                    'tstamp' => $execTime,
-                    'crdate' => $execTime,
-                    'module' => 'newspage',
-                    'perms_userid' => 1,
-                    'perms_groupid' => 1,
-                    'perms_user' => 31,
-                    'perms_group' => 31,
-                    'perms_everybody' => 1,
-                ],
+                $newKey => array_merge(
+                    [
+                        'pid' => $pid,
+                        'hidden' => 0,
+                        'doktype' => 254,
+                        'tstamp' => $execTime,
+                        'crdate' => $execTime,
+                        'module' => 'newspage',
+                        'perms_userid' => 1,
+                        'perms_groupid' => 1,
+                        'perms_user' => 31,
+                        'perms_group' => 31,
+                        'perms_everybody' => 1,
+                    ],
+                    $this->getCustomisableFieldsForFolder($date, $type)
+                ),
             ],
         ];
 
@@ -181,6 +185,13 @@ class SortNews
         $dataHandler->process_datamap();
 
         return $dataHandler->substNEWwithIDs[$newKey];
+    }
+
+    protected function getCustomisableFieldsForFolder(\DateTime $date, FolderType $type): array
+    {
+        return [
+            'title' => $date->format($type->value),
+        ];
     }
 
     protected function sortStoragePages(): void
